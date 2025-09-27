@@ -1,0 +1,339 @@
+// File: prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enums ---
+
+enum SubjectType {
+  Common
+  DLO
+  ILOT
+  MajorMinor
+}
+
+enum UserRole {
+  Admin
+  Faculty
+  User
+}
+
+enum DayOfWeek {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+  Sunday
+}
+
+enum FacultyDesignation {
+  HOD
+  Professor
+  AssociateProfessor
+  AssistantProfessor
+}
+
+enum SyllabusType {
+  Theory
+  Lab
+}
+
+enum DivisionType {
+  Permanent
+  Temporary
+}
+
+enum SlotCategory {
+  Lecture
+  Lab
+  Break
+  Event_Scheduled // For events explicitly scheduled
+  Blocked // For general blocked slots if needed in future
+}
+
+enum EventFrequency {
+  ONCE
+  WEEKLY
+}
+
+// --- Models ---
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  passwordHash  String
+  role          UserRole @default(User)
+  isPending     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  faculty       Faculty?
+  createdEvents Event[]  @relation("EventCreator")
+  timetablePresets TimetablePreset[]
+}
+
+model Faculty {
+  id              Int                  @id @default(autoincrement())
+  name            String
+  uniqueId        String               @unique
+  departmentId    Int
+  department      Department           @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  designation     FacultyDesignation
+  userId          Int?                 @unique
+  user            User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  loadAllocations LoadAllocation[]
+  timetableSlots  TimetableSlot[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
+
+model Department {
+  id                     Int                       @id @default(autoincrement())
+  name                   String                    @unique
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  rooms                  Room[]
+  subjects               Subject[]
+  faculty                Faculty[]
+  divisions              Division[]
+  studentElectiveChoices StudentElectiveChoice[]
+  events                 Event[]
+  customLabGroupSets     CustomLabGroupSet[]
+  timetablePresets       TimetablePreset[]
+}
+
+model Room {
+  id             Int             @id @default(autoincrement())
+  roomNumber     String          @unique
+  category       String // Lecture, Lab, Auditorium Hall
+  floor          Int
+  capacity       Int
+  features       String[]        @default([])
+  departmentId   Int?
+  department     Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  timetableSlots TimetableSlot[]
+  events         Event[]         @relation("EventRooms")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Subject {
+  id                     Int                       @id @default(autoincrement())
+  code                   String                    @unique
+  name                   String
+  departmentId           Int
+  department             Department                @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  year                   Int
+  semester               Int
+  subjectType            SubjectType
+  courseGroup            String?
+  courseCategory         String?
+  theoryHours            Int                       @default(0)
+  practicalHours         Int                       @default(0)
+  labRequirements        String[]                  @default([])
+  syllabi                Syllabus[]
+  loadAllocations        LoadAllocation[]
+  timetableSlots         TimetableSlot[]
+  studentElectiveChoices StudentElectiveChoice[]
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  avgStudentsPerDivision Int?
+  avgStudentsPerBatch    Int?
+}
+
+model Syllabus {
+  id         Int          @id @default(autoincrement())
+  filePath   String
+  year       Int
+  semester   Int
+  type       SyllabusType
+  subjectId  Int
+  subject    Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([subjectId, type])
+}
+
+model Division {
+  id                 Int              @id @default(autoincrement())
+  name               String
+  year               Int
+  semester           Int
+  departmentId       Int
+  department         Department       @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  divisionType       DivisionType
+  linkedSubjectType  SubjectType?
+  courseCategory     String?
+  batches            Batch[]          @relation("PermanentDivisionToBatches")
+  composedOfPermanentBatches Batch[]   @relation("TemporaryDivisionComposition")
+  loadAllocations    LoadAllocation[]
+  timetableSlots     TimetableSlot[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([name, year, semester, departmentId])
+}
+
+model CustomLabGroupSet {
+  id                  Int              @id @default(autoincrement())
+  departmentId        Int
+  department          Department       @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  year                Int
+  semester            Int
+  linkedSubjectType   SubjectType
+  courseCategory      String
+  customLabBatches    CustomLabBatch[] @relation("SetToCustomLabBatches")
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@unique([departmentId, year, semester, linkedSubjectType, courseCategory], name: "unique_elective_offering_lab_group_set")
+}
+
+model CustomLabBatch {
+  id                         Int                @id @default(autoincrement())
+  name                       String
+  customLabGroupSetId        Int
+  customLabGroupSet          CustomLabGroupSet  @relation("SetToCustomLabBatches", fields: [customLabGroupSetId], references: [id], onDelete: Cascade)
+  composedOfPermanentBatches Batch[]            @relation("CustomLabBatchComposition")
+  loadAllocations            LoadAllocation[]
+  createdAt                  DateTime           @default(now())
+  updatedAt                  DateTime           @updatedAt
+
+  @@unique([name, customLabGroupSetId])
+}
+
+model Batch {
+  id                         Int                       @id @default(autoincrement())
+  name                       String
+  permanentDivisionId        Int
+  permanentDivision          Division                  @relation("PermanentDivisionToBatches", fields: [permanentDivisionId], references: [id], onDelete: Cascade)
+  memberOfTemporaryDivisions Division[]                @relation("TemporaryDivisionComposition")
+  memberOfCustomLabBatches   CustomLabBatch[]          @relation("CustomLabBatchComposition")
+  loadAllocations            LoadAllocation[]
+  studentElectiveChoices     StudentElectiveChoice[]
+  timetableSlots             TimetableSlot[]           @relation("BatchSpecificSlots")
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+
+  @@unique([name, permanentDivisionId])
+}
+
+model StudentElectiveChoice {
+  id           Int        @id @default(autoincrement())
+  academicYear Int
+  semester     Int
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  subjectId    Int
+  subject      Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  batchId      Int
+  batch        Batch      @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  studentCount Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([academicYear, semester, departmentId, subjectId, batchId])
+}
+
+model LoadAllocation {
+  id                    Int             @id @default(autoincrement())
+  facultyId             Int
+  faculty               Faculty         @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  subjectId             Int
+  subject               Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  divisionId            Int
+  division              Division        @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  batchId               Int?
+  batch                 Batch?          @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  customLabBatchId      Int?
+  customLabBatch        CustomLabBatch? @relation(fields: [customLabBatchId], references: [id], onDelete: Cascade)
+  allocationType        SyllabusType
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@unique([facultyId, subjectId, divisionId, batchId, allocationType], name: "unique_standard_batch_alloc")
+  @@unique([facultyId, subjectId, divisionId, customLabBatchId, allocationType], name: "unique_custom_lab_batch_alloc")
+}
+
+model TimetablePreset {
+  id           Int      @id @default(autoincrement())
+  name         String
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year         Int        // e.g., 3 for Third Year
+  semester     Int        // e.g., 6 for the 6th semester
+  rules        Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([name, departmentId, year, semester], name: "unique_preset_per_sem")
+}
+
+model TimetableSlot {
+  id                       Int           @id @default(autoincrement()) // CORRECTED HERE
+  dayOfWeek                DayOfWeek
+  startTime                String
+  endTime                  String
+  slotCategory             SlotCategory
+  academicSessionStartYear Int
+  divisionId               Int
+  division                 Division      @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  roomId                   Int?
+  room                     Room?         @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  subjectId                Int?
+  subject                  Subject?      @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  facultyId                Int?
+  faculty                  Faculty?      @relation(fields: [facultyId], references: [id], onDelete: SetNull)
+  batchId                  Int?
+  batch                    Batch?        @relation("BatchSpecificSlots", fields: [batchId], references: [id], onDelete: SetNull)
+  
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  @@index([academicSessionStartYear, divisionId, dayOfWeek])
+  @@index([academicSessionStartYear, facultyId, dayOfWeek])
+  @@index([academicSessionStartYear, roomId, dayOfWeek])
+}
+
+model Event {
+  id                Int            @id @default(autoincrement())
+  title             String
+  description       String?
+  frequency         EventFrequency
+  departmentId      Int?
+  department        Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  assignedRooms     Room[]         @relation("EventRooms")
+  createdByUserId   Int?
+  createdByUser     User?          @relation("EventCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  eventTimings      EventTiming[]
+  reminderEnabled   Boolean        @default(false)
+  reminderDateTime  DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model EventTiming {
+  id           Int       @id @default(autoincrement())
+  eventId      Int
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  dayOfWeek    DayOfWeek
+  startTime    String
+  endTime      String
+  specificDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([eventId, dayOfWeek, startTime, specificDate])
+}

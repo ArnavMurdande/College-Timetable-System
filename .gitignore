@@ -1,0 +1,39 @@
+# Dependencies
+/node_modules
+/client/node_modules
+/server/node_modules
+
+# Build Output
+/dist
+/client/dist
+/server/dist
+
+# Environment variables
+.env
+client/.env
+server/.env
+*.env.local
+
+# Prisma generated client (can be large)
+# server/node_modules/.prisma/client
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE config
+.vscode/
+.idea/
+
+# Uploads (if storing locally - adjust path if needed)
+/server/uploads/
+
+# Videos
+/client/src/assets/videos

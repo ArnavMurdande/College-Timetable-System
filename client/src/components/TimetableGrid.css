@@ -1,0 +1,233 @@
+/* client/src/components/TimetableGrid.css */
+
+/* --- Screen View Styles (When isPrintPreview is false) --- */
+/* These are for the normal web app view. Tailwind in JSX should primarily handle this. */
+
+
+.timetable-table-screen {
+  min-width: 100%;
+  border-collapse: collapse;
+  
+}
+
+.timetable-table-screen th,
+.timetable-table-screen td {
+  /* Tailwind: p-2 border-b dark:border-gray-700 text-xs ... */
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #000000; /* Default light border for screen */
+  border-radius: 2px !important;
+}
+
+.timetable-table-screen th {
+  /* Tailwind: text-left font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider */
+  padding: 0.5rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  background-color: #0000003c; /* Tailwind gray-50 */
+}
+
+.timetable-table-screen td {
+  /* Tailwind: text-gray-900 dark:text-gray-100 */
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  height: 5.5rem; /* Adjust as needed for screen */
+}
+
+.timetable-slot-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0.25rem;
+  line-height: 1.3;
+}
+.timetable-slot-screen .main-display { font-weight: 600; font-size: 0.8rem; }
+.timetable-slot-screen .sub-display { font-size: 0.75rem; }
+.timetable-slot-screen .detail-display { font-size: 0.75rem; }
+.timetable-slot-screen .batch-display { font-size: 0.75rem; font-weight: 500; }
+
+
+/* --- Styles for Print Preview (html2canvas capture) AND @media print --- */
+.timetable-print-area.is-print-preview {
+    margin: 0 !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background-color: white !important;
+    font-family: 'Arial', sans-serif !important;
+    color: black !important;
+    box-sizing: border-box;
+}
+
+/* Print Header: Red box, logo left, text details right/below */
+.is-print-preview .print-header {
+    display: flex !important; /* Changed to flex for side-by-side or controlled stacking */
+    flex-direction: row !important; /* Logo and details side-by-side */
+    align-items: center !important; /* Vertically align items in the middle */
+    width: 100% !important;
+    background-color: #9e1c34 !important;
+    color: white !important;
+    padding: 8px 10px !important; /* Reduced padding to control height */
+    margin-bottom: 10px !important; /* Reduced space below header */
+    border-radius: 10px !important;
+    box-sizing: border-box;
+}
+
+.is-print-preview .print-logo-box {
+    padding: 0 !important; /* Remove padding if logo itself has space */
+    margin-right: -100px !important; /* Space between logo and text details */
+    flex-shrink: 0; /* Prevent logo box from shrinking */
+}
+
+.is-print-preview .print-logo-image {
+    height: 180px !important; /* Default logo height, user can adjust if needed via image attributes or more specific CSS */
+    width: 200px !important;
+    display: block !important; /* Or inline-block if preferred */
+}
+
+.is-print-preview .print-details-section {
+    text-align: center !important; /* Align text to the left within its own block */
+    flex-grow: 1; /* Allow details section to take remaining space */
+}
+
+.is-print-preview .print-details-section h1,
+.is-print-preview .print-details-section h2,
+.is-print-preview .print-details-section h3,
+.is-print-preview .print-details-section h4 {
+    color: white !important;
+    line-height: 1.25 !important;
+    margin: 1px 0 !important; /* Minimal vertical margin */
+}
+
+.is-print-preview .print-details-college-name { font-size: 12pt !important; font-weight: bold !important; }
+.is-print-preview .print-details-college-address { font-size: 8pt !important; }
+.is-print-preview .print-details-department { font-size: 10pt !important; font-weight: bold !important; margin-top: 2px !important;}
+.is-print-preview .print-details-academic-context { font-size: 9pt !important; }
+.is-print-preview .print-details-class-title { font-size: 11pt !important; font-weight: bold !important; margin-top: 2px !important;}
+
+/* Table Styles for Print */
+.is-print-preview .timetable-table-print {
+    table-layout: fixed !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 5px !important; /* Reduced space above table */
+}
+
+.is-print-preview .timetable-table-print th,
+.is-print-preview .timetable-table-print td {
+    border: 0.4px solid #374151 !important; /* Thinner border */
+    color: black !important;
+    vertical-align: middle !important;
+    padding: 4px 4px !important; /* Balanced padding */
+    font-size: 7pt !important; /* Slightly smaller base for more content */
+    line-height: 1.2 !important;
+    overflow: hidden !important;
+    word-break: break-word !important;
+    height: 52px !important; /* Adjusted cell height */
+    min-height: 52px !important;
+    text-align: center !important;
+    box-sizing: border-box;
+}
+
+.is-print-preview .timetable-table-print th {
+    font-weight: bold !important;
+    background-color: #E5E7EB !important; /* gray-200 */
+    font-size: 7.5pt !important;
+}
+
+.is-print-preview .timetable-table-print td .slot-content-print {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+    height: 100%;
+    padding: 1px; /* Minimal internal padding for slot content */
+    box-sizing: border-box;
+    color: black !important;
+}
+.is-print-preview .timetable-table-print td .slot-content-print-main { font-size: 7pt !important; font-weight: 600 !important; display: block; margin-bottom: 1px; color: black !important; }
+.is-print-preview .timetable-table-print td .slot-content-print-sub,
+.is-print-preview .timetable-table-print td .slot-content-print-detail,
+.is-print-preview .timetable-table-print td .slot-content-print-batch { font-size: 6pt !important; display: block; line-height: 1.1 !important; color: #1f1f1f !important; }
+.is-print-preview .timetable-table-print td .slot-content-print-batch { font-weight: 500 !important; }
+
+.is-print-preview .timetable-table-print .print-bg-lecture { background-color: #EBF4FF !important; } /* Lighter blue */
+.is-print-preview .timetable-table-print .print-bg-lab { background-color: #E6FFFA !important; }    /* Lighter green */
+.is-print-preview .timetable-table-print .print-bg-event { background-color: #F5F3FF !important; } /* Lighter purple */
+.is-print-preview .timetable-table-print .print-bg-break { background-color: #FFFBEB !important; font-weight: bold; } /* Lighter yellow */
+.is-print-preview .timetable-table-print .print-bg-day-header { background-color: #F9FAFB !important; font-weight: bold; } /* Lighter gray */
+
+/* Footer Styles for Print */
+.is-print-preview .print-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-size: 8.5pt !important;
+    color: black !important;
+    padding-top: 10px !important; /* Space above footer text */
+    border-top: 0.5px solid #4B5563 !important;
+    margin-top: 10px !important; /* Space below table, above footer */
+    width: 100%;
+    box-sizing: border-box;
+}
+.is-print-preview .print-footer-text { color: black !important; font-weight: bold !important; }
+
+
+/* --- @media print specific overrides (Minimal, as .is-print-preview handles most for html2canvas) --- */
+@media print {
+    @page {
+        size: A3 landscape;
+        margin: 5mm;
+    }
+
+    body, html {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        background-color: white !important;
+        color: black !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: 'Arial', sans-serif !important;
+    }
+
+    /* Most styles are inherited from .is-print-preview. Add minor tweaks if actual print differs. */
+    .timetable-print-area.is-print-preview {
+        padding: 5px !important;
+    }
+    .is-print-preview .print-header {
+         margin-bottom: 8px !important;
+         padding: 8px 10px !important;
+    }
+    .is-print-preview .print-logo-image {
+        height: 48px !important; /* Slightly smaller for actual print if necessary */
+    }
+     .is-print-preview .timetable-table-print th,
+     .is-print-preview .timetable-table-print td {
+        height: 50px !important;
+        min-height: 50px !important;
+        padding: 3px !important;
+        font-size: 6.5pt !important;
+    }
+    .is-print-preview .timetable-table-print td .slot-content-print-main { font-size: 6.5pt !important; }
+    .is-print-preview .timetable-table-print td .slot-content-print-sub,
+    .is-print-preview .timetable-table-print td .slot-content-print-detail,
+    .is-print-preview .timetable-table-print td .slot-content-print-batch { font-size: 5.5pt !important;}
+
+    .is-print-preview .print-footer {
+        padding-top: 8px !important;
+        margin-top: 8px !important;
+        font-size: 8pt !important;
+    }
+
+    .timetable-print-area-screen, .screen-only {
+        display: none !important;
+    }
+}
+
+.screen-hidden {
+    display: none !important;
+}

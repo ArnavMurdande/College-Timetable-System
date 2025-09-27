@@ -1,0 +1,19 @@
+/* Step 4.8: Add Tailwind directives to CSS */
+/* Open 'client/src/index.css'. Replace ALL existing content with this: */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: Add global base styles here */
+body {
+  @apply font-sans bg-gray-100 antialiased; /* Example using Inter font and background */
+}
+
+/* Optional: Style for NavLink active state */
+.active-nav-link {
+    @apply bg-gray-900 text-white;
+}
+.inactive-nav-link {
+    @apply text-gray-300 hover:bg-gray-700 hover:text-white;
+}

@@ -1,12 +1,30 @@
-# React + Vite
+# Timetable Management System - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the source code for the client-side of the College Timetable Management System. It is a modern Single-Page Application (SPA) built with React, providing a dynamic and responsive user interface for all timetable-related tasks.
 
-Currently, two official plugins are available:
+## 🚀 Core Technologies
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* **[React](https://reactjs.org/)**: A JavaScript library for building user interfaces.
+* **[Vite](https://vitejs.dev/)**: A next-generation frontend tooling that provides a faster and leaner development experience.
+* **[Tailwind CSS](https://tailwindcss.com/)**: A utility-first CSS framework for rapid UI development.
+* **[Axios](https://axios-http.com/)**: A promise-based HTTP client for making API requests to the backend server.
+* **[React Router](https://reactrouter.com/)**: (Assumed) For handling client-side routing and navigation between pages.
 
-## Expanding the ESLint configuration
+## ✨ Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The frontend is broken down into several feature-rich modules, each corresponding to a specific management task:
+
+* **Dashboard & Navigation**: A central admin dashboard to access all management modules.
+* **Authentication**: Secure login and registration pages for users.
+* **Resource Management**: Intuitive interfaces for managing:
+    * Faculty
+    * Subjects & Syllabi
+    * Rooms
+    * Divisions & Batches
+* **Scheduling & Allocation**:
+    * **Load Allocation**: A dedicated module to assign teaching loads to faculty.
+    * **Event Scheduling**: A tool to schedule college-wide events without conflicts.
+    * **Student Electives**: A page for managing student elective choices.
+* **Timetable Generation & Viewing**:
+    * Create, manage, and generate timetables based on predefined rules.
+    * View generated timetables by division, faculty, or classroom.
